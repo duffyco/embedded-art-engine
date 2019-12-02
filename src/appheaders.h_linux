@@ -1,0 +1,71 @@
+#ifndef Appheaders_h_
+#define Appheaders_h_
+
+#include <sys/time.h>
+#include <cstdlib>
+#include <ctime>
+#include <unistd.h>
+#include <string>
+
+static const char* DATA_SOURCE_FILENAME = "/home/strangeloops/log/datasource.txt";
+static const char* TRANSITION_MANAGER_FILENAME = "/home/strangeloops/log/transitionmanager.txt";
+static const char* LAYER_FILENAME = "/home/strangeloops/log/layer.txt";
+
+static double unifRand( double a, double b )
+{
+	return (b-a) * ( rand() / double( RAND_MAX ) ) + a;
+}
+
+static void ThreadSleep( int ms )
+{
+	usleep( ms * 1000 );
+}
+
+
+static timeval* previousCounter = 0;
+
+static void destroyPreviousCounter()
+{
+	delete previousCounter;
+}
+
+static void initPreviousCounter()
+{
+    previousCounter = new timeval;
+    previousCounter->tv_sec = (time_t)0;
+    previousCounter->tv_usec = 0;
+}
+
+static double durationFromOS()
+{
+    timeval counter;
+    double elapsedTime;
+
+    // start timer
+    gettimeofday(&counter, 0);
+
+    double secCounter = counter.tv_sec;
+    double usecCounter = counter.tv_usec;
+    
+    if( previousCounter == 0 )
+        initPreviousCounter();
+    
+    double prevSec = previousCounter->tv_sec;
+    double prevUsec = previousCounter->tv_usec;
+    
+    double callDuration = (secCounter - prevSec) * 1000000 + (usecCounter - prevUsec);
+    
+    *previousCounter = counter;
+    
+    return callDuration / 1000.0;
+}
+
+enum eTransitionMode
+{
+	NOT_ACTIVE,
+	ACTIVE,
+};
+
+
+
+#endif
